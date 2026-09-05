@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Login-item template. You normally do not need to touch this file — just run:
+
+      ./start.sh install-agent
+
+  which fills in the real paths, writes
+  ~/Library/LaunchAgents/com.airelay.proxy.plist and loads it immediately.
+
+  To install by hand: replace every __DIR__ with the absolute path of the airelay
+  directory, then
+
+      cp com.airelay.proxy.plist.example ~/Library/LaunchAgents/com.airelay.proxy.plist
+      launchctl load -w ~/Library/LaunchAgents/com.airelay.proxy.plist
+
+  KeepAlive=true means launchd brings the proxy back about 10 seconds after a crash.
+  Together with the proxy's own retry and channel rotation, that is two independent
+  layers keeping the connection alive.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.airelay.proxy</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>__DIR__/start.sh</string>
+    <string>serve</string>
+    <string>--quiet</string>
+  </array>
+
+  <key>WorkingDirectory</key><string>__DIR__</string>
+
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>10</integer>
+  <key>ProcessType</key><string>Background</string>
+
+  <key>StandardOutPath</key><string>__DIR__/logs/launchd.out.log</string>
+  <key>StandardErrorPath</key><string>__DIR__/logs/launchd.err.log</string>
+</dict>
+</plist>

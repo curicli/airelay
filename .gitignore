@@ -1,0 +1,9 @@
+config.json
+secrets.env
+logs/
+__pycache__/
+*.pyc
+.DS_Store
+.claude/
+*.plist
+!com.airelay.proxy.plist.example

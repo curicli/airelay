@@ -1,0 +1,81 @@
+{
+  "_comment": "Copy to config.json, then edit. Never put a key in here in plaintext: use ${ENV_VAR} or file:/absolute/path.",
+
+  "listen": { "host": "127.0.0.1", "port": 8787 },
+
+  "sticky_primary": true,
+  "probe_model": "claude-opus-5",
+
+  "upstreams": [
+    {
+      "name": "agentrouter",
+      "base_url": "https://agentrouter.org",
+      "auth": "passthrough",
+      "note": "primary; passthrough reuses the client's own token, so no key to fill in"
+    },
+    {
+      "name": "backup-relay",
+      "base_url": "https://your-second-relay.example.com",
+      "auth": "${BACKUP_RELAY_KEY}",
+      "auth_style": "auto",
+      "enabled": false,
+      "note": "set base_url + the env var, then flip enabled to true",
+      "model_map": {}
+    },
+    {
+      "name": "official",
+      "base_url": "https://api.anthropic.com",
+      "auth": "${ANTHROPIC_API_KEY}",
+      "auth_style": "x-api-key",
+      "enabled": false,
+      "note": "direct-to-Anthropic backstop; enable it and interruptions get very unlikely"
+    }
+  ],
+
+  "retry": {
+    "max_attempts": 30,
+    "initial_backoff": 1.0,
+    "max_backoff": 20.0,
+    "backoff_multiplier": 2.0,
+    "jitter": 0.5,
+    "respect_retry_after": true,
+    "max_retry_after": 120
+  },
+
+  "_model_fallback_comment": "Model-level switching. When a channel says it does not have the model, or the same model fails switch_after_attempts times in a row, walk the chain. Set enabled to false to always use exactly the model you asked for.",
+  "model_fallback": {
+    "enabled": true,
+    "switch_after_attempts": 4,
+    "unavailable_ttl_seconds": 600,
+    "chains": {
+      "claude-opus-5": ["claude-opus-4-8", "claude-sonnet-5"],
+      "claude-sonnet-5": ["claude-sonnet-4-6"],
+      "claude-haiku-4-5-20251001": ["claude-sonnet-5"],
+      "*": []
+    }
+  },
+
+  "timeouts": {
+    "connect": 15,
+    "read": 600,
+    "stream_idle": 120,
+    "total": 1800
+  },
+
+  "stream": {
+    "mode": "gated",
+    "keepalive_interval": 15,
+    "optimistic_commit_after": 8,
+    "max_gate_wait": 300,
+    "max_buffer_bytes": 16777216
+  },
+
+  "breaker": {
+    "failure_threshold": 3,
+    "cooldown_seconds": 20,
+    "max_cooldown_seconds": 300,
+    "rotate_cooldown_seconds": 90
+  },
+
+  "log": { "file": "logs/airelay.jsonl", "echo": true, "bodies": false }
+}
